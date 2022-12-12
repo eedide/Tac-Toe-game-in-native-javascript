@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<!--
+Tic-Tic-Tac-Toe game in native javascript
+-->
+<html>
+    <head>
+        <title>Tic-Tac-Toe</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            #rec00{
+                float: left;
+                background-color: #ff00ff;
+            }
+            #rec01{
+                float: left;
+                background-color: violet;
+            }
+            #rec02{
+                float: left;
+                background-color: #cc00cc;
+            }
+            #rec10{
+                float: left;
+                background-color: #ff33cc;
+            }
+            #rec11{
+                float: left;
+                background-color: aliceblue;
+            }
+            #rec12{
+                float: left;
+                background-color: activeborder;
+            }
+            #rec20{
+                float: left;
+                background-color: lightpink;
+            }
+            #rec21{
+                float: left;
+                background-color: violet;
+            }
+            #rec22{
+                float: left;
+                background-color: #ff9900;
+            }
+            #rectangleWrapper{
+                margin: auto;
+                width: 600px;
+                height: 600px;
+            }
+            #red{
+                color: crimson;
+            }
+            #black{
+                color: black;
+            }
+            .rectangle{
+                line-height: 200px;
+                text-align: center;
+                height: 200px;
+                width: 200px;
+            }
+            .symbol{
+                height: 130px;
+                width: 130px;
+                font-family: Arial, Helvetica, sans-serif;
+                font-weight: bolder;
+                font-size: 200px;
+            }
+        </style>
+    </head>
+    <body>
+        <!--draw a 3 by 3 board on screen-->
+        <div id="rectangleWrapper">
+            <div id="rec00" class="rectangle"></div>
+            <div id="rec01" class="rectangle"></div>
+            <div id="rec02" class="rectangle"></div>
+            <div id="rec10" class="rectangle"></div>
+            <div id="rec11" class="rectangle"></div>
+            <div id="rec12" class="rectangle"></div>
+            <div id="rec20" class="rectangle"></div>
+            <div id="rec21" class="rectangle"></div>
+            <div id="rec22" class="rectangle"></div>
+        </div>
+        <script>
+            var cellArray = [//2d array to mark already taken cells
+                ["","",""],
+                ["","",""],
+                ["","",""]
+            ];
+            document.addEventListener("DOMContentLoaded",TicTacToe());
+            var symbol = " ";//initial symbol for storing x
+            let y, x, z;
+            
+            function TakeCell(r,c,cellID){
+                //T
+                //if symbol variable is empty, store x in symbol variable, display x(in red), mark cell as taken in cellArray
+                if(symbol === " "){
+                    symbol = "x";//store x in symbol variable
+                    //display x(in red)
+                    let cID = document.getElementById(cellID);
+                    cID.innerHTML = '<span id="red" class="symbol">X</span>';//display x(in red)
+                    cellArray[r][c] = "x";//mark cell as taken in cellArray
+                }else if(symbol === "x"){//if x is in symbol variable, display O(in black), clear symbol variable, mark cell as taken in cellArray
+                    //display O(in black)
+                    let cID = document.getElementById(cellID);
+                    cID.innerHTML = '<span id="black" class="symbol">O</span>';//display O(in black)
+                    symbol = " ";//clear symbol variable
+                    cellArray[r][c] = "y";//mark cell as taken in cellArray
+                }
+                
+                /////////////////////////////triggers to end the game////////////////////////////////
+                y = sameColumnCompleted();//does one column have same symbol, that symbol has won
+                x = sameRowCompleted();//does one row have same symbol, that symbol has won
+                z = sameDiagonalCompleted();//does either diagonal have same symbol, that symbol has won
+                /////////////////////////////////////////////////////////////////////////////////////
+                
+                /////////////////////////////////////////////////////////////////////////////////////
+                /*If the triggers to end the game does not end the game,the game must be a stalmate*/
+                if(gameOver()){              
+                   if(!x && !y && !z){//if not same symbol in same column,row or diagonal
+                       //Print "Cats game!", reset the board
+                       alert("No winner! start again");
+                       resetBoard();
+                   }
+                }
+                //////////////////////////////////////////////////////////////////////////////////
+                
+            }
+
+            function isCellFree(e){
+                let cellVal;
+                let cellId = e.target.id;//receive cell id
+                //extract the number from the id into cellID variable
+                let row = parseInt(cellId.substring(3,4));//convert the substring to number
+                let col = parseInt(cellId.substring(4));//convert the substring to number
+                
+                //if someone clicks, first check if that cell is free
+                cellVal = cellArray[row][col];//retrieve cell's value
+                if(cellVal !== "x" || cellVal !== "y"){//cell is free
+                    TakeCell(row,col,cellId);//go ahead and insert
+                }else{
+                    alert("This cell is taken");//already taken
+                }     
+            }
+            
+            function gameOver(){
+                cnt = 0;//initialize count to 0
+                //if game over, return true, otherwise return false
+                for(let i=0;i<cellArray.length;i++){
+                    for(let j=0;j<cellArray[i].length;j++){
+                        if(cellArray[i][j] === "x" || cellArray[i][j] === "y"){
+                            cnt++;//increment count
+                        }
+                    }
+                }
+                if(cnt === 9){
+                    return true;//game over
+                }
+                return false;//not over yet
+            }
+            
+            function resetBoard(){
+                cellArray = [//reset cellArray
+                    ["","",""],
+                    ["","",""],
+                    ["","",""]
+                ];
+                //remove span from div with class rectangle
+                let myRecWrapperDiv = document.getElementById("rectangleWrapper");
+                let myRec = myRecWrapperDiv.querySelectorAll(".rectangle");
+                for(let prop of myRec){
+                    prop.innerHTML = " ";
+                }
+                //reset symbol variable
+                symbol = " ";
+            }
+            
+            function check_column(symbol,col){
+                for(let i=0;i<cellArray.length;i++){
+                    if(cellArray[i][col] !== symbol){
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
+            function check_row(symbol,row){
+                for(let j=0;j<cellArray.length;j++){
+                    if(cellArray[row][j] !== symbol){
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
+            function check_diagonal(symbol){
+                let cnt = 0;
+                for(let i=0;i<cellArray.length;i++){//row
+                    for(let j=0;j<cellArray[i].length;j++){//column
+                        
+                        if(i===0 && j===0){//check 0,0 1,1 2,2 diagonal for same symbol;
+                            for(let x=0;x<cellArray.length;x++){
+                                if(cellArray[i+x][j+x] === symbol){
+                                    cnt++;//increment cnt
+                                }
+                                if(cnt===cellArray.length){//count of diagonal cells with symbol === 3
+                                    return true;
+                                }
+                            }
+                        }
+                        
+                        if(i===0 && j===2){//check 0,2 1,1 2,0 diagonal for same symbol
+                            var y=0;
+                            for(let x=j;x>=0;x--){
+                                if(cellArray[i+y][x] !== symbol){//increment row, decrement col
+                                    return false;//no need to continue if 1 diagonal cell if false
+                                }
+                                y++;
+                            }
+                            return true;//if all diagonal cell contain symbol - we are done - because after row 0, col 2 no need to continue
+                        }
+                        
+                    }
+                }
+            }
+            
+            function sameColumnCompleted(){
+                for(let col=0;col<cellArray.length;col++){
+                    y = check_column("x",col);
+                    if(y){
+                        //announce x winner, reset the board
+                        alert("X has won!");
+                        resetBoard();
+                        break;
+                    }
+                }
+                
+                for(let col=0;col<cellArray.length;col++){
+                     y = check_column("y",col);
+                     if(y){
+                        //announce x winner, reset the board
+                        alert("O has won!");
+                        resetBoard();
+                        break;
+                    }
+                }
+                return y;
+            }
+            function sameRowCompleted(){
+                for(let row=0;row<cellArray.length;row++){
+                    x = check_row("x",row);//all 3 rows
+                    if(x){
+                        //announce x winner, reset the board
+                        alert("X has won!");
+                        resetBoard();
+                        break;
+                    }
+               }
+
+               for(let row=0;row<cellArray.length;row++){
+                    x = check_row("y",row);//all 3 rows
+                    if(x){
+                        //announce y winner, reset the board
+                        alert("O has won!");
+                        resetBoard();
+                        break;
+                    }
+               }
+               return x;
+            }
+            function sameDiagonalCompleted(){
+                z = check_diagonal("x");
+                if(z){
+                    //announce x winner, reset the board
+                    alert("X has won!");
+                    resetBoard();
+                }
+                z = check_diagonal("y");
+                if(z){
+                    //announce y winner, reset the board
+                    alert("O has won!");
+                    resetBoard();
+                }
+                return z;
+            }
+            function TicTacToe(){
+                var myBoard = document.getElementById("rectangleWrapper");    
+                myBoard.addEventListener("click",isCellFree);
+            }
+         </script>
+    </body>
+</html>
